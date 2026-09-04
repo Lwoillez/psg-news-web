@@ -28,8 +28,12 @@ Puis ouvre http://localhost:3000.
 2. Va sur [vercel.com](https://vercel.com), connecte-toi avec GitHub, "Add New Project"
    → sélectionne le repo. Vercel détecte Next.js automatiquement, aucune config
    nécessaire.
-3. Déploie. Le cron (`vercel.json`, toutes les heures) se met en place automatiquement
-   sur le tier gratuit.
+3. Déploie. Le cron (`vercel.json`) se met en place automatiquement sur le tier
+   gratuit — limité à 1 exécution/jour sur le plan Hobby (contrainte Vercel, pas
+   négociable sans passer Pro), réglé sur 6h du matin. Pour un vrai refresh horaire,
+   utilise un service de cron externe gratuit (ex. [cron-job.org](https://cron-job.org))
+   qui appelle `/api/refresh` en POST toutes les heures, indépendamment de Vercel — ou
+   utilise simplement le bouton "Rafraîchir" de l'interface.
 4. (Optionnel mais recommandé) Dans les paramètres du projet Vercel → Environment
    Variables, ajoute `CRON_SECRET` avec une valeur aléatoire. Vercel l'utilise
    automatiquement pour authentifier ses propres appels cron vers `/api/refresh` (voir
