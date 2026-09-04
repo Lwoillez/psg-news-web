@@ -1,16 +1,12 @@
 import Link from "next/link";
 import type { Article } from "@/lib/articles";
+import { getSourceFaviconUrl } from "@/lib/sources";
 import { relativeTime } from "@/lib/format";
+import { SourceFavicon } from "./SourceFavicon";
 
 export function FeaturedArticleCard({ article }: { article: Article }) {
   return (
     <Link href={`/article/${article.id}`} className="featured-card">
-      {/* eslint-disable-next-line @next/next/no-img-element -- images.unoptimized: true, voir next.config.mjs */}
-      {article.imageUrl ? (
-        <img className="thumb" src={article.imageUrl} alt="" />
-      ) : (
-        <div className="thumb" />
-      )}
       <span className="tag">{article.sourceName}</span>
       <h2>{article.title}</h2>
       {article.summary && <p className="card-summary">{article.summary}</p>}
@@ -26,7 +22,9 @@ export function ArticleRow({ article }: { article: Article }) {
       {article.imageUrl ? (
         <img className="thumb" src={article.imageUrl} alt="" />
       ) : (
-        <div className="thumb" />
+        <div className="thumb thumb-placeholder">
+          <SourceFavicon src={getSourceFaviconUrl(article.sourceId)} />
+        </div>
       )}
       <div>
         <span className="tag">{article.sourceName}</span>

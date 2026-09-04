@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 
 /**
  * Bouton de régénération à la demande : appelle /api/refresh (qui invalide le
- * cache des flux et de l'extraction), puis force Next.js à re-rendre la page
- * avec les données fraîches. La même route est aussi appelée automatiquement
- * toutes les heures par le cron Vercel (voir vercel.json) — le bouton, c'est
- * juste pour ne pas attendre.
+ * cache des flux, puis préchauffe le texte complet des articles du jour), puis
+ * force Next.js à re-rendre la page avec les données fraîches. La même route est
+ * aussi appelée automatiquement une fois par jour par le cron Vercel (voir
+ * vercel.json, limite du plan Hobby) — le bouton, c'est pour ne pas attendre.
  */
 export function RefreshButton() {
   const router = useRouter();

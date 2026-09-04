@@ -18,24 +18,20 @@ export default async function ArticlePage({ params }: Props) {
   const article = await getArticleById(params.id);
   if (!article) notFound();
 
-  const blocks = await getFullContent(article.link);
+  const paragraphs = await getFullContent(article.link);
 
   return (
     <>
       <header className="site-header">
-        <div className="container">
+        <div className="container detail-header">
           <Link href="/" className="wordmark">
             PSG <span>News</span>
           </Link>
+          <Link href="/" className="back-link">
+            ← Retour à la liste
+          </Link>
         </div>
       </header>
-
-      {/* eslint-disable-next-line @next/next/no-img-element -- images.unoptimized: true, voir next.config.mjs */}
-      {article.imageUrl ? (
-        <img className="detail-hero" src={article.imageUrl} alt="" />
-      ) : (
-        <div className="detail-hero" />
-      )}
 
       <div className="container detail-body">
         <span className="tag">{article.sourceName}</span>
@@ -46,16 +42,11 @@ export default async function ArticlePage({ params }: Props) {
 
         {article.summary && <p className="article-summary">{article.summary}</p>}
 
-        {blocks && blocks.length > 0 ? (
+        {paragraphs && paragraphs.length > 0 ? (
           <div className="article-text">
-            {blocks.map((block, i) =>
-              block.type === "image" ? (
-                // eslint-disable-next-line @next/next/no-img-element -- images.unoptimized: true, voir next.config.mjs
-                <img key={i} src={block.src} alt={block.alt} loading="lazy" />
-              ) : (
-                <p key={i}>{block.text}</p>
-              ),
-            )}
+            {paragraphs.map((text, i) => (
+              <p key={i}>{text}</p>
+            ))}
           </div>
         ) : (
           <p className="extraction-note">

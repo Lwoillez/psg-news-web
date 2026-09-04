@@ -44,3 +44,16 @@ export const SOURCES: Source[] = [
 export function getSource(id: SourceId): Source | undefined {
   return SOURCES.find((s) => s.id === id);
 }
+
+/**
+ * Favicon du site source, utilisé comme vignette de repli quand un article n'a
+ * pas d'image (pas de vignette RSS). Passe par le service de favicons de Google
+ * plutôt que /favicon.ico en direct : plus fiable (fallback intégré) et évite les
+ * soucis de hotlink protection qu'on a déjà rencontrés avec les images d'articles.
+ */
+export function getSourceFaviconUrl(id: SourceId): string | undefined {
+  const source = getSource(id);
+  if (!source) return undefined;
+  const host = new URL(source.feedUrl).host;
+  return `https://www.google.com/s2/favicons?domain=${host}&sz=128`;
+}
