@@ -1,0 +1,325 @@
+/* Palette et typo "Option B — couleurs officielles PSG" (maquette validée). */
+:root {
+  --psg-navy: #001e50;
+  --psg-navy-light: #003c8c;
+  --psg-red: #da020e;
+  --psg-red-dark: #a50109;
+
+  --surface: #ffffff;
+  --surface-muted: #f5f6fa;
+  --text-primary: #10142b;
+  --text-secondary: #8a8fa3;
+  --divider: #edeef3;
+}
+
+/*
+ * --font-headline et --font-body sont injectées par next/font (voir app/layout.tsx,
+ * option `variable`) sur la balise <html> — on ajoute juste une pile de secours au
+ * cas où, sans redéfinir la variable elle-même (ce qui créerait une référence
+ * circulaire).
+ */
+:root {
+  --headline-stack: var(--font-headline), ui-sans-serif, system-ui, sans-serif;
+  --body-stack: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--surface);
+  color: var(--text-primary);
+  font-family: var(--body-stack);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--psg-red);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--psg-red-dark);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--headline-stack);
+  margin: 0;
+}
+
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* --- En-tête --- */
+.site-header {
+  background: var(--psg-navy);
+  padding: 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.site-header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.wordmark {
+  font-family: var(--headline-stack);
+  font-weight: 700;
+  font-size: 22px;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.wordmark span {
+  color: var(--psg-red);
+}
+
+/* --- Bouton rafraîchir --- */
+.refresh-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-family: var(--headline-stack);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+}
+.refresh-button:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+.refresh-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.refresh-button svg {
+  transition: transform 0.6s ease;
+}
+.refresh-button.is-refreshing svg {
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --- Filtres par source --- */
+.source-filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 16px 20px;
+  scrollbar-width: none;
+}
+.source-filters::-webkit-scrollbar {
+  display: none;
+}
+.chip {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-family: var(--headline-stack);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  border: none;
+  cursor: pointer;
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+}
+.chip.is-active {
+  background: var(--psg-red);
+  color: #fff;
+}
+
+/* --- Liste d'articles --- */
+.article-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 40px;
+}
+.empty-state {
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.featured-card {
+  display: block;
+  background: var(--surface-muted);
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.featured-card .thumb {
+  width: 100%;
+  height: 220px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: linear-gradient(135deg, var(--psg-navy) 0%, var(--psg-navy-light) 100%);
+}
+.featured-card .tag {
+  display: block;
+  margin-top: 10px;
+}
+.featured-card h2 {
+  font-size: 22px;
+  line-height: 1.25;
+  margin-top: 6px;
+}
+
+.card-summary {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 8px 0 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+.article-row .card-summary {
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.article-row {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--divider);
+}
+.article-row .thumb {
+  width: 84px;
+  height: 84px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--psg-navy) 0%, var(--psg-navy-light) 100%);
+}
+.article-row h3 {
+  font-size: 15px;
+  line-height: 1.3;
+  margin-top: 4px;
+}
+
+.tag {
+  font-family: var(--headline-stack);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--psg-red);
+}
+.meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* --- Page détail --- */
+.detail-hero {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  background: linear-gradient(135deg, var(--psg-navy) 0%, var(--psg-navy-light) 100%);
+}
+.detail-body {
+  padding: 24px 0 60px;
+}
+.detail-body h1 {
+  font-size: 30px;
+  line-height: 1.2;
+  margin: 10px 0 12px;
+}
+.detail-meta {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--divider);
+}
+.article-summary {
+  font-family: var(--headline-stack);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-primary);
+  margin: 20px 0 0;
+  padding-left: 14px;
+  border-left: 3px solid var(--psg-red);
+}
+.article-text {
+  font-size: 17px;
+  line-height: 1.7;
+  color: #262a3f;
+  margin-top: 20px;
+}
+.article-text p {
+  margin: 0 0 16px;
+}
+.article-text img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin: 4px 0 20px;
+}
+.extraction-note {
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-top: 20px;
+}
+.back-link {
+  display: inline-block;
+  margin-top: 24px;
+  font-family: var(--headline-stack);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+.source-link-button {
+  display: inline-block;
+  margin-top: 28px;
+  background: var(--psg-red);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-family: var(--headline-stack);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+}
+.source-link-button:hover {
+  background: var(--psg-red-dark);
+  color: #fff;
+}
+
+@media (max-width: 480px) {
+  .detail-body h1 {
+    font-size: 24px;
+  }
+  .featured-card .thumb {
+    height: 160px;
+  }
+}
