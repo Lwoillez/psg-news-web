@@ -258,7 +258,8 @@ h3 {
   color: #fff;
 }
 .detail-body {
-  padding: 24px 0 60px;
+  padding-top: 24px;
+  padding-bottom: 60px;
 }
 .detail-body h1 {
   font-size: 30px;

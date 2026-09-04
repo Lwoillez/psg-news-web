@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { JSDOM } from "jsdom";
 import { Readability } from "@mozilla/readability";
+import { mapWithConcurrency } from "./concurrency";
 
 /**
  * Extraction du texte complet d'un article — appelée quand on ouvre sa page de
@@ -60,20 +61,4 @@ export async function warmTodayArticles(articles: { link: string; publishedAt: n
     .map((article) => article.link);
 
   await mapWithConcurrency(todayLinks, 4, (link) => getFullContent(link).catch(() => null));
-}
-
-async function mapWithConcurrency<T>(
-  items: T[],
-  concurrency: number,
-  fn: (item: T) => Promise<unknown>,
-) {
-  const queue = [...items];
-  await Promise.all(
-    Array.from({ length: concurrency }, async () => {
-      let item: T | undefined;
-      while ((item = queue.shift()) !== undefined) {
-        await fn(item);
-      }
-    }),
-  );
 }

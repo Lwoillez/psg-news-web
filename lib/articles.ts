@@ -1,6 +1,8 @@
 import Parser from "rss-parser";
-import { SOURCES, type Source } from "./sources";
+import { unstable_cache } from "next/cache";
+import { SOURCES, getSource, type SourceId, type Source } from "./sources";
 import { articleId } from "./id";
+import { mapWithConcurrency } from "./concurrency";
 
 export interface Article {
   id: string;
@@ -34,20 +36,11 @@ const parser = new Parser<Record<string, unknown>, FeedItem>({
   },
 });
 
-/**
- * Va chercher et parse un flux RSS pour une source donnée. Chaque source échoue
- * indépendamment (site en panne, rate-limit...) : on renvoie une liste vide plutôt
- * que de faire planter tout le rafraîchissement des autres sources.
- *
- * `next: { revalidate, tags: ["feeds"] }` branche cette requête sur le cache de
- * données de Next.js : elle n'est refaite que toutes les heures, ou à la demande
- * quand /api/refresh appelle revalidateTag("feeds") (bouton "Rafraîchir" ou cron).
- */
+/** Va chercher et parse un flux RSS pour une source donnée, sans filtrer les liens morts. */
 async function fetchSourceArticles(source: Source): Promise<Article[]> {
   try {
     const response = await fetch(source.feedUrl, {
       headers: { "User-Agent": "PsgNewsWeb/0.1 (+usage personnel)" },
-      next: { revalidate: 3600, tags: ["feeds"] },
     });
     if (!response.ok) return [];
 
@@ -88,6 +81,50 @@ async function fetchSourceArticles(source: Source): Promise<Article[]> {
   }
 }
 
+/**
+ * `true` seulement si le lien répond explicitement 404 — une erreur réseau ou un
+ * timeout ne compte pas comme mort : mieux vaut garder un article par erreur que
+ * le faire disparaître à tort à cause d'un site source momentanément lent.
+ */
+async function isDeadLink(url: string): Promise<boolean> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 4000);
+  try {
+    const response = await fetch(url, {
+      method: "HEAD",
+      headers: { "User-Agent": "PsgNewsWeb/0.1 (+usage personnel)" },
+      signal: controller.signal,
+    });
+    return response.status === 404;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+/**
+ * Flux + filtrage des liens morts (404) pour une source, mis en cache une heure —
+ * ou jusqu'au prochain revalidateTag("feeds") (bouton "Rafraîchir" ou cron). La
+ * vérification (une requête HEAD par article, concurrence limitée) ne tourne donc
+ * qu'à chaque rafraîchissement des flux, pas à chaque visite.
+ */
+const getLiveSourceArticles = unstable_cache(
+  async (sourceId: SourceId): Promise<Article[]> => {
+    const source = getSource(sourceId);
+    if (!source) return [];
+
+    const items = await fetchSourceArticles(source);
+    const alive: Article[] = [];
+    await mapWithConcurrency(items, 8, async (item) => {
+      if (!(await isDeadLink(item.link))) alive.push(item);
+    });
+    return alive;
+  },
+  ["source-articles"],
+  { revalidate: 3600, tags: ["feeds"] },
+);
+
 function mentionsPsg(article: Article): boolean {
   const haystack = `${article.title} ${article.summary ?? ""}`.toLowerCase();
   return ["psg", "paris saint-germain", "paris sg"].some((kw) => haystack.includes(kw));
@@ -102,7 +139,7 @@ function stripHtml(html?: string): string | undefined {
 
 /** Tous les articles de toutes les sources, du plus récent au plus ancien. */
 export async function getArticles(): Promise<Article[]> {
-  const bySource = await Promise.all(SOURCES.map(fetchSourceArticles));
+  const bySource = await Promise.all(SOURCES.map((source) => getLiveSourceArticles(source.id)));
   return bySource.flat().sort((a, b) => b.publishedAt - a.publishedAt);
 }
 

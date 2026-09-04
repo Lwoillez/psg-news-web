@@ -28,17 +28,9 @@ Puis ouvre http://localhost:3000.
 2. Va sur [vercel.com](https://vercel.com), connecte-toi avec GitHub, "Add New Project"
    → sélectionne le repo. Vercel détecte Next.js automatiquement, aucune config
    nécessaire.
-3. Déploie. Le cron (`vercel.json`) se met en place automatiquement sur le tier
-   gratuit — limité à 1 exécution/jour sur le plan Hobby (contrainte Vercel, pas
-   négociable sans passer Pro), réglé sur 6h du matin. Pour un vrai refresh horaire,
-   utilise un service de cron externe gratuit (ex. [cron-job.org](https://cron-job.org))
-   qui appelle `/api/refresh` en POST toutes les heures, indépendamment de Vercel — ou
-   utilise simplement le bouton "Rafraîchir" de l'interface.
-4. (Optionnel mais recommandé) Dans les paramètres du projet Vercel → Environment
-   Variables, ajoute `CRON_SECRET` avec une valeur aléatoire. Vercel l'utilise
-   automatiquement pour authentifier ses propres appels cron vers `/api/refresh` (voir
-   `app/api/refresh/route.ts`) — ça évite que n'importe qui sur Internet puisse
-   déclencher un rafraîchissement en trouvant l'URL.
+3. Déploie. Pas de cron programmé : le rafraîchissement des flux se fait
+   uniquement via le bouton "Rafraîchir" de l'interface (en plus du cache Next.js
+   qui se renouvelle tout seul au bout d'une heure — voir plus bas).
 
 ## Architecture
 
@@ -52,7 +44,7 @@ lib/
 app/
   page.tsx                Page liste (Server Component)
   article/[id]/page.tsx   Page détail d'un article
-  api/refresh/route.ts    Invalide le cache des flux (cron + bouton)
+  api/refresh/route.ts    Invalide le cache des flux (bouton "Rafraîchir" uniquement)
 components/
   ArticleList.tsx    Filtres par source + liste (Client Component, filtre en mémoire)
   ArticleCard.tsx     Carte "à la une" + ligne compacte
@@ -60,13 +52,14 @@ components/
 ```
 
 **Comment marche la régénération** : la page liste (`/`) est mise en cache par Next.js
-(Data Cache sur les appels `fetch` des flux RSS, tag `"feeds"`). Le cache se
-renouvelle tout seul au bout d'une heure, ou immédiatement si `/api/refresh` est
-appelé (`revalidateTag("feeds")`) — ce qui arrive soit via le cron Vercel
-(`vercel.json`), soit via le bouton "Rafraîchir" de l'interface. Le texte complet
-extrait d'un article (`lib/extract.ts`) a son propre cache, séparé et bien plus long
-(30 jours) : un article déjà publié ne change pour ainsi dire jamais, pas besoin de le
-ré-extraire à chaque rafraîchissement de la liste.
+(un cache par source RSS, tag `"feeds"`). Le cache se renouvelle tout seul au bout
+d'une heure, ou immédiatement si le bouton "Rafraîchir" appelle `/api/refresh`
+(`revalidateTag("feeds")`) — il n'y a pas de cron programmé, uniquement ces deux
+déclencheurs. À chaque régénération, chaque lien d'article est aussi vérifié (requête
+HEAD, en parallèle limité) et les liens qui répondent explicitement 404 sont exclus de
+la liste. Le texte complet extrait d'un article (`lib/extract.ts`) a son propre cache,
+séparé et bien plus long (30 jours) : un article déjà publié ne change pour ainsi dire
+jamais, pas besoin de le ré-extraire à chaque rafraîchissement de la liste.
 
 ## État des flux RSS (vérifié début septembre 2026)
 
@@ -83,6 +76,6 @@ ré-extraire à chaque rafraîchissement de la liste.
 
 - Vérifier/corriger le flux Canal Supporters si besoin (`lib/sources.ts`).
 - Mode sombre, favicon, image Open Graph pour le partage sur les réseaux.
-- Protéger `/api/refresh` plus sérieusement si le site devient public et très visité
-  (pour l'instant : `CRON_SECRET` protège l'appel cron, mais le bouton en POST reste
-  ouvert — acceptable pour un site perso à faible trafic).
+- Protéger `/api/refresh` si le site devient public et très visité (pour l'instant,
+  le bouton en POST reste ouvert sans protection — acceptable pour un site perso à
+  faible trafic).
