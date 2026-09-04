@@ -125,12 +125,11 @@ h3 {
 /* --- Filtres par source --- */
 .source-filters {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  overflow-x: auto;
   max-width: 760px;
   margin: 0 auto;
   padding: 16px 20px;
-  scrollbar-width: none;
 }
 .source-filters::-webkit-scrollbar {
   display: none;
