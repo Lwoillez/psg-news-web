@@ -104,10 +104,12 @@ async function isDeadLink(url: string): Promise<boolean> {
 }
 
 /**
- * Flux + filtrage des liens morts (404) pour une source, mis en cache une heure —
- * ou jusqu'au prochain revalidateTag("feeds") (bouton "Rafraîchir" ou cron). La
- * vérification (une requête HEAD par article, concurrence limitée) ne tourne donc
- * qu'à chaque rafraîchissement des flux, pas à chaque visite.
+ * Flux + filtrage des liens morts (404) pour une source, mis en cache jusqu'au
+ * prochain revalidateTag("feeds") — déclenché uniquement par le bouton
+ * "Rafraîchir", pas de renouvellement automatique dans le temps (`revalidate:
+ * false`) : sans clic, la liste reste strictement celle du dernier rafraîchissement
+ * manuel. La vérification des liens (une requête HEAD par article, concurrence
+ * limitée) ne tourne donc que sur cette action, jamais en arrière-plan.
  */
 const getLiveSourceArticles = unstable_cache(
   async (sourceId: SourceId): Promise<Article[]> => {
@@ -122,7 +124,7 @@ const getLiveSourceArticles = unstable_cache(
     return alive;
   },
   ["source-articles"],
-  { revalidate: 3600, tags: ["feeds"] },
+  { revalidate: false, tags: ["feeds"] },
 );
 
 function mentionsPsg(article: Article): boolean {
